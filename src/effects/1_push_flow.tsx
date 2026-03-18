@@ -105,7 +105,7 @@ export default function PushFlowEffect({
                 {" "} travel across vast landscapes from the Shire to {" "}
                 <InteractiveWord 
                   word="Mount Doom" 
-                  imageSrc="/src/images/doom.jpg"
+                  imageSrc="/src/images/new.png"
                   effect="push"
                   isFalling={false}
                   startIndex={400}

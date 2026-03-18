@@ -38,7 +38,7 @@ export default function PushFlowEffect({
               <img 
                 src="/src/images/ring.jpg" 
                 alt="The One Ring" 
-                className="w-28 h-28 rounded-full border border-black object-cover mb-6 grayscale hover:grayscale-0 transition-all duration-500"
+                className="w-48 h-auto mb-6"
               />
               <div className="text-[10px] lg:text-[12px] leading-[1.3] text-black/90">
                 <p className="font-bold text-[12px] lg:text-[14px] mb-1">The Shire Branch (Hobbiton)</p>

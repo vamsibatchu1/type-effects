@@ -65,7 +65,7 @@ export default function PushFlowEffect({
                 The Lord of the Rings is an epic high-fantasy novel by J. R. R. Tolkien. Set in {" "}
                 <InteractiveWord 
                   word="Middle-earth [1]" 
-                  imageSrc="https://picsum.photos/seed/middle_earth/1200/800"
+                  imageSrc="/src/images/middleearth.jpg"
                   effect="push"
                   isFalling={false}
                   startIndex={1}
@@ -102,7 +102,16 @@ export default function PushFlowEffect({
                   startIndex={300}
                   className={UnderlineStyle}
                 />
-                {" "} travel across vast landscapes from the Shire to Mount Doom. Their quest is for the preservation of freedom and the destruction of the weapon that could enslave all of civilization. Its themes of friendship, courage, and the corruptive nature of power have made it one of the most influential works in modern literature.
+                {" "} travel across vast landscapes from the Shire to {" "}
+                <InteractiveWord 
+                  word="Mount Doom" 
+                  imageSrc="/src/images/doom.jpg"
+                  effect="push"
+                  isFalling={false}
+                  startIndex={400}
+                  className={UnderlineStyle}
+                />
+                {" "}. Their quest is for the preservation of freedom and the destruction of the weapon that could enslave all of civilization. Its themes of friendship, courage, and the corruptive nature of power have made it one of the most influential works in modern literature.
               </p>
 
               <p className="mb-8 break-inside-avoid text-black/60 italic">

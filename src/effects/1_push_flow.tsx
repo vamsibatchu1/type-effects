@@ -64,6 +64,19 @@ export default function PushFlowEffect({
                 <p className="border-b border-black w-fit">king.return@gondor.gov</p>
               </div>
            </div>
+
+           {/* Sidebar Footer */}
+           <div className="mt-auto pt-16 text-[10px] lg:text-[12px] opacity-80 uppercase font-semibold">
+              a project by {" "}
+              <a 
+                href="https://www.linkedin.com/in/vamsibatchu" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline underline-offset-4 decoration-black hover:opacity-50 transition-opacity"
+              >
+                Wamsi Bachu
+              </a>
+           </div>
         </div>
 
         {/* Right Column: About Paragraphs */}

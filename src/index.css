@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@100..900&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-ibm-mono: "IBM Plex Mono", monospace;
+
+  --animate-cursor: blinking-cursor 2.5s infinite ease-in-out;
+
+  @keyframes blinking-cursor {
+    0%, 45%, 55%, 100% { opacity: 1; }
+    50%, 60% { opacity: 0; }
+  }
+}
+
+body {
+  background-color: #fdfcfb;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.editorial-text {
+  font-family: var(--font-serif);
+  line-height: 1.5;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.editorial-columns {
+  column-count: 3;
+  column-gap: 3rem;
+  column-fill: balance;
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .editorial-columns {
+    column-count: 2;
+  }
+}
+
+

@@ -29,7 +29,7 @@ export default function PushFlowEffect({
   handleReset: () => void;
 }) {
   return (
-    <div className="w-full h-full bg-[#fae100] overflow-hidden font-sans text-black selection:bg-black selection:text-[#fae100] flex flex-col pt-12 lg:pt-24">
+    <div className="w-full h-full bg-[#F3D301] overflow-hidden font-sans text-black selection:bg-black selection:text-[#F3D301] flex flex-col pt-12 lg:pt-24">
       {/* Main Content Area */}
       <div className="flex-grow overflow-y-auto px-6 lg:px-12 pb-32 flex flex-row gap-12 lg:gap-32 scroll-smooth">
         {/* Left Column: Icons & Contact */}
@@ -38,7 +38,7 @@ export default function PushFlowEffect({
               <img 
                 src="/src/images/ring.jpg" 
                 alt="The One Ring" 
-                className="w-48 h-auto mb-6"
+                className="w-64 h-auto mb-8"
               />
               <div className="text-[10px] lg:text-[12px] leading-[1.3] text-black/90">
                 <p className="font-bold text-[12px] lg:text-[14px] mb-1">The Shire Branch (Hobbiton)</p>
@@ -51,21 +51,6 @@ export default function PushFlowEffect({
                 <br />
                 <p>+001-RING-442</p>
                 <p className="border-b border-black w-fit">frodo@fellowship.org</p>
-              </div>
-           </div>
-
-           <div className="mb-24">
-              <ClockIcon isDark />
-              <div className="text-[10px] lg:text-[12px] leading-[1.3] text-black/90">
-                <p className="font-bold text-[12px] lg:text-[14px] mb-1">Minas Tirith (Gondor)</p>
-                <p>Capital Headquarters</p>
-                <br />
-                <p>Seventh Level</p>
-                <p>The White Tower,</p>
-                <p>Minas Tirith, Gondor</p>
-                <p>Middle-earth</p>
-                <br />
-                <p className="border-b border-black w-fit">king.return@gondor.gov</p>
               </div>
            </div>
         </div>

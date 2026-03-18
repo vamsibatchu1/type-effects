@@ -99,6 +99,19 @@ export default function App() {
             ))}
           </nav>
         </div>
+
+        {/* Global Sidebar Footer */}
+        <div className="mt-auto pt-8 border-t border-black/10 text-[11px] leading-relaxed text-gray-500 uppercase tracking-wider font-semibold">
+          a project by{" "}
+          <a 
+            href="https://www.linkedin.com/in/vamsikbatchu/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-black underline underline-offset-4 decoration-black hover:opacity-70 transition-opacity"
+          >
+            Vamsi Batchu
+          </a>
+        </div>
       </aside>
 
       {/* Main Content - 80% */}

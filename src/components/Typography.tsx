@@ -64,7 +64,7 @@ const renderEffect = (effect: EffectType, isOpen: boolean, imageSrc: string, wor
               transition={{ type: "spring", damping: 20, stiffness: 100 }}
               className="float-right ml-6 mb-4 mt-2 overflow-hidden"
             >
-              <img src={imageSrc} alt={word} className="w-full h-auto grayscale block" referrerPolicy="no-referrer" />
+              <img src={imageSrc} alt={word} className="w-full h-auto block" referrerPolicy="no-referrer" />
             </motion.div>
           )}
         </AnimatePresence>

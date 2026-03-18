@@ -35,7 +35,11 @@ export default function PushFlowEffect({
         {/* Left Column: Icons & Contact */}
         <div className="w-[180px] lg:w-[220px] flex-shrink-0 pt-0">
            <div className="mb-24">
-              <ClockIcon />
+              <img 
+                src="/src/images/ring.jpg" 
+                alt="The One Ring" 
+                className="w-28 h-28 rounded-full border border-black object-cover mb-6 grayscale hover:grayscale-0 transition-all duration-500"
+              />
               <div className="text-[10px] lg:text-[12px] leading-[1.3] text-black/90">
                 <p className="font-bold text-[12px] lg:text-[14px] mb-1">The Shire Branch (Hobbiton)</p>
                 <p>Regional Office</p>

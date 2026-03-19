@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "motion/react";
+import { HandTracker } from "../components/HandTracker";
 
 const PURPLE = "#B88AFF";
 const TEXT_CONTENT = "Dynamic Layout Architecture: Responsive design systems require fluid distribution of space. By employing spring-based physics for width allocation, components can adapt to user interactions without jarring transitions. This approach ensures that the visual hierarchy remains balanced as elements are resized. The underlying mathematical model calculates proportional offsets to maintain the relative importance of each content block. Advanced layout engines use these principles to create interfaces that feel organic and responsive. Modern web applications benefit from these dynamic systems, allowing for a more immersive and interactive user experience. The ability to manipulate the workspace directly creates a sense of empowerment and control for the end-user. Designers and developers can collaborate to define the constraints and behaviors that guide these fluid layouts, resulting in more robust and versatile digital products.";
@@ -232,12 +233,18 @@ const ResizableRow = ({ initialWidths, configs = [] }: ResizableRowProps) => {
             {i < widths.length - 1 && (
               <div
                 onMouseDown={handleMouseDown(i)}
-                className={`absolute top-0 right-[-4px] w-[8px] h-full cursor-col-resize z-50 transition-colors ${
+                className={`absolute top-0 right-[-4px] w-[8px] h-full cursor-col-resize z-50 transition-all flex items-center justify-center ${
                   config.bgColor === "bg-white" 
-                    ? resizingIdx === i ? "bg-black/40" : "hover:bg-black/10"
-                    : resizingIdx === i ? "bg-white/40" : "hover:bg-white/10"
+                    ? resizingIdx === i ? "bg-black/60 w-[12px] right-[-6px]" : "hover:bg-black/10"
+                    : resizingIdx === i ? "bg-white/60 w-[12px] right-[-6px]" : "hover:bg-white/10"
                 }`}
-              />
+              >
+                {resizingIdx === i && (
+                  <div className={`text-[12px] font-bold ${config.bgColor === "bg-white" ? "text-white" : "text-black"}`}>
+                    ↔
+                  </div>
+                )}
+              </div>
             )}
             </motion.div>
           </React.Fragment>
@@ -279,7 +286,7 @@ export default function DynamicLayoutEffect() {
             />
           </div>
         </div>
-
+        <HandTracker />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { EffectType, EffectEntry } from "./types";
 import PushFlowEffect from "./effects/1_push_flow";
 import GravityEffect from "./effects/2_gravity";
 import KineticFocusEffect from "./effects/3_kinetic_focus";
+import DNAEffect from "./effects/4_dna_effect";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -19,6 +20,11 @@ const EFFECTS: EffectEntry[] = [
     id: "kinetic", 
     label: "Kinetic Focus", 
     description: "Elastic gaps open letter-by-letter to accommodate a dynamic, moving subject word." 
+  },
+  { 
+    id: "dna", 
+    label: "DNA Helix", 
+    description: "A vertical 3D terminal helix rotating words through a depth-mapped cylindrical spine." 
   },
 ];
 
@@ -135,6 +141,7 @@ export default function App() {
           />
         )}
         {activeEffect === "kinetic" && <KineticFocusEffect />}
+        {activeEffect === "dna" && <DNAEffect />}
       </main>
     </div>
   );

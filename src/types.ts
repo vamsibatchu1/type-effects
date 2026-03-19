@@ -1,4 +1,4 @@
-export type EffectType = "push" | "split" | "kinetic";
+export type EffectType = "push" | "split" | "kinetic" | "dna";
 
 export interface InteractiveWordProps {
   word: string;

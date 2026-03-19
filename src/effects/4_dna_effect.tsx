@@ -65,25 +65,25 @@ const ResizableRow = ({ initialWidths }: ResizableRowProps) => {
   }, [resizingIdx, widths]);
 
   return (
-    <div ref={containerRef} className="flex-grow flex h-full w-full gap-2 relative">
+    <div ref={containerRef} className="flex-grow flex h-full w-full relative">
       {widths.map((w, i) => (
         <React.Fragment key={i}>
           <motion.div
             layout
             style={{ width: `${w}%` }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="h-full bg-[#B88AFF] rounded-sm p-3 relative overflow-hidden flex flex-col"
+            className="h-full border border-white/30 p-3 relative overflow-hidden flex flex-col rounded-none scrollbar-hide"
           >
-            <div className="text-[10px] lg:text-[11px] leading-tight text-[#2D5A27] font-extrabold text-justify whitespace-normal break-all h-full overflow-hidden">
+            <div className="text-[10px] lg:text-[11px] leading-tight text-white font-medium text-justify whitespace-normal break-all h-full overflow-hidden opacity-90">
                {/* Use repeated text to ensure it looks FULLY filled */}
-               {new Array(5).fill(TEXT_CONTENT).join(" ")}
+               {new Array(10).fill(TEXT_CONTENT).join(" ")}
             </div>
             
             {/* Draggable Handle (Right Side) */}
             {i < widths.length - 1 && (
               <div
                 onMouseDown={handleMouseDown(i)}
-                className={`absolute top-0 right-[-4px] w-[8px] h-full cursor-col-resize z-50 transition-colors ${resizingIdx === i ? 'bg-white/50' : 'hover:bg-white/20'}`}
+                className={`absolute top-0 right-[-4px] w-[8px] h-full cursor-col-resize z-50 transition-colors ${resizingIdx === i ? 'bg-white/40' : 'hover:bg-white/10'}`}
               />
             )}
           </motion.div>
@@ -104,16 +104,16 @@ export default function DNAEffect() {
         
         {/* Main 800x600 Box */}
         <div 
-          className="bg-black/20 p-2 flex flex-col gap-2 rounded-md shadow-2xl" 
+          className="bg-black/20 p-2 flex flex-col rounded-md shadow-2xl overflow-hidden" 
           style={{ width: '800px', height: '600px' }}
         >
           {/* Row 1: 3 Boxes */}
-          <div className="h-[48.5%] flex w-full">
+          <div className="h-[50%] flex w-full">
             <ResizableRow initialWidths={[33.3, 33.3, 33.3]} />
           </div>
           
           {/* Row 2: 2 Boxes */}
-          <div className="h-[48.5%] flex w-full">
+          <div className="h-[50%] flex w-full">
             <ResizableRow initialWidths={[50, 50]} />
           </div>
         </div>

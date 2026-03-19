@@ -3,7 +3,7 @@ import { EffectType, EffectEntry } from "./types";
 import PushFlowEffect from "./effects/1_push_flow";
 import GravityEffect from "./effects/2_gravity";
 import KineticFocusEffect from "./effects/3_kinetic_focus";
-import DNAEffect from "./effects/4_dna_effect";
+import DynamicLayoutEffect from "./effects/4_dynamic_layout";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -22,9 +22,9 @@ const EFFECTS: EffectEntry[] = [
     description: "Elastic gaps open letter-by-letter to accommodate a dynamic, moving subject word." 
   },
   { 
-    id: "dna", 
-    label: "DNA Helix", 
-    description: "A vertical 3D terminal helix rotating words through a depth-mapped cylindrical spine." 
+    id: "dynamic-layout", 
+    label: "Dynamic Layout", 
+    description: "Responsive, draggable columns that fluidly redistribute their widths using spring physics." 
   },
 ];
 
@@ -141,7 +141,7 @@ export default function App() {
           />
         )}
         {activeEffect === "kinetic" && <KineticFocusEffect />}
-        {activeEffect === "dna" && <DNAEffect />}
+        {activeEffect === "dynamic-layout" && <DynamicLayoutEffect />}
       </main>
     </div>
   );

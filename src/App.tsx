@@ -4,6 +4,7 @@ import PushFlowEffect from "./effects/1_push_flow";
 import GravityEffect from "./effects/2_gravity";
 import KineticFocusEffect from "./effects/3_kinetic_focus";
 import DynamicLayoutEffect from "./effects/4_dynamic_layout";
+import PretextFlowEffect from "./effects/5_pretext_flow";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -25,6 +26,11 @@ const EFFECTS: EffectEntry[] = [
     id: "dynamic-layout", 
     label: "Dynamic Layout", 
     description: "Responsive, draggable columns that fluidly redistribute their widths using spring physics." 
+  },
+  { 
+    id: "pretext", 
+    label: "Pretext Flow", 
+    description: "Pure JS multiline text rendering and routing using the Pretext engine." 
   },
 ];
 
@@ -142,6 +148,7 @@ export default function App() {
         )}
         {activeEffect === "kinetic" && <KineticFocusEffect />}
         {activeEffect === "dynamic-layout" && <DynamicLayoutEffect />}
+        {activeEffect === "pretext" && <PretextFlowEffect />}
       </main>
     </div>
   );

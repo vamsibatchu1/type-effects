@@ -5,6 +5,7 @@ import GravityEffect from "./effects/2_gravity";
 import KineticFocusEffect from "./effects/3_kinetic_focus";
 import DynamicLayoutEffect from "./effects/4_dynamic_layout";
 import PretextFlowEffect from "./effects/5_pretext_flow";
+import ScriptureLayoutEffect from "./effects/6_scripture_layout";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -32,6 +33,11 @@ const EFFECTS: EffectEntry[] = [
     label: "Pretext Flow", 
     description: "Pure JS multiline text rendering and routing using the Pretext engine." 
   },
+  {
+    id: "scripture",
+    label: "Scripture Lens",
+    description: "A historical grid layout rendered flawlessly on Canvas, featuring structural red alignment guides and typography that dynamically distorts and parts around your cursor."
+  }
 ];
 
 export default function App() {
@@ -149,6 +155,7 @@ export default function App() {
         {activeEffect === "kinetic" && <KineticFocusEffect />}
         {activeEffect === "dynamic-layout" && <DynamicLayoutEffect />}
         {activeEffect === "pretext" && <PretextFlowEffect />}
+        {activeEffect === "scripture" && <ScriptureLayoutEffect />}
       </main>
     </div>
   );

@@ -44,6 +44,34 @@ const AudioPill = () => {
     );
 };
 
+const TypewriterText = ({ text }: { text: string }) => {
+  const [displayText, setDisplayText] = React.useState("");
+  const [index, setIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(text.slice(0, index + 1));
+        setIndex(index + 1);
+      }, Math.random() * 30 + 30);
+      return () => clearTimeout(timeout);
+    } else {
+      const timeout = setTimeout(() => {
+        setDisplayText("");
+        setIndex(0);
+      }, 4000);
+      return () => clearTimeout(timeout);
+    }
+  }, [index, text]);
+
+  return (
+    <>
+      {displayText}
+      <span className="inline-block w-[6px] h-[0.9em] bg-[#1a1a1a] ml-[2px] align-baseline animate-cursor" />
+    </>
+  );
+};
+
 export default function WavyTextEffect() {
   return (
     <div className="w-full h-full flex flex-col items-center justify-center font-sans overflow-hidden relative selection:bg-purple-200 selection:text-purple-900 bg-[#F0F0FF]">
@@ -75,11 +103,11 @@ export default function WavyTextEffect() {
       
 
       {/* Center Flow Container */}
-      <div className="relative w-full h-[400px] flex items-center justify-center mt-20 max-w-[1200px] 2xl:max-w-[1600px] mx-auto">
+      <div className="relative w-full h-[400px] mt-20 max-w-[1200px] 2xl:max-w-[1600px] mx-auto">
         
         {/* LEFT STREAM: RAW TEXT ON INVISIBLE WAVE */}
         <div 
-          className="absolute left-0 w-1/2 h-full overflow-hidden"
+          className="absolute left-0 w-[30%] h-full overflow-hidden"
           style={{ 
             maskImage: "linear-gradient(to right, transparent 0%, black 20%, black 100%)",
             WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 20%, black 100%)"
@@ -105,22 +133,18 @@ export default function WavyTextEffect() {
         </div>
 
         {/* THE PILL */}
-        <div className="relative z-50">
+        <div className="absolute top-1/2 left-[30%] -translate-x-1/2 -translate-y-1/2 z-50">
           <AudioPill />
         </div>
 
         {/* RIGHT STREAM: POLISHED TEXT IN SOLID WAVE PIPELINE */}
-        <div 
-          className="absolute right-0 w-1/2 h-full overflow-hidden"
-          style={{ 
-            maskImage: "linear-gradient(to right, black 0%, black 80%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(to right, black 0%, black 80%, transparent 100%)"
-          }}
-        >
-          <svg width="2000" height="400" viewBox="0 0 2000 400" className="absolute left-0 top-1/2 -translate-y-1/2">
+        <div className="absolute right-0 w-[70%] h-full overflow-hidden">
+          
+          {/* Wave Pipeline */}
+          <svg width="2000" height="400" viewBox="0 0 2000 400" className="absolute left-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
              <path 
                 id="rightWave"
-                d="M 0 200 Q 200 100, 400 200 T 800 200 T 1200 200 T 1600 200 T 2000 200"
+                d="M 0 200 C 133 133, 266 133, 400 200"
                 fill="none"
                 stroke="#1A1A1A"
                 strokeWidth="56"
@@ -136,6 +160,23 @@ export default function WavyTextEffect() {
                  </motion.textPath>
              </text>
           </svg>
+
+          {/* Document Paper */}
+          <div className="absolute top-1/2 -translate-y-1/2 left-[360px] w-[260px] min-h-[300px] mt-[10px] bg-[#FDFCFB] shadow-[8px_16px_0px_rgba(147,130,255,0.2)] border-[2px] border-[#1A1A1A] z-10 p-6 flex flex-col rotate-[14deg] overflow-hidden">
+            
+            {/* Feeder Slot Bracket */}
+            <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[14px] h-[70px] bg-[#1A1A1A] rounded-r-md z-20" />
+
+            <div className="border-b-[2px] border-black/10 pb-3 mb-5 flex items-center justify-between relative z-10">
+              <div className="text-[10px] font-ibm-mono font-bold tracking-widest text-[#9382FF] uppercase">Output_7.txt</div>
+              <div className="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse" />
+            </div>
+
+            <div className="font-ibm-mono text-[13px] leading-[1.6] text-[#1a1a1a] relative z-10 text-justify">
+              <TypewriterText text={POLISHED_STRING} />
+            </div>
+            
+          </div>
         </div>
 
       </div>

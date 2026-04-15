@@ -4,9 +4,12 @@ import { motion } from 'framer-motion';
 const RAW_BINARY = Array(400).fill(0).map(() => Math.floor(Math.random() * 2)).join("");
 const POLISHED_STRING = "Welcome to the seventh experiment. We are exploring the intersection of raw data and polished typography. Watch as the digital noise transforms into a clear stream of consciousness.";
 
-// Create very long strings to ensure seamless streaming streaming visually
+// Create very long strings to ensure seamless streaming visually
 const LONG_RAW = Array(5).fill(RAW_BINARY).join("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0");
-const LONG_POLISHED = Array(15).fill(POLISHED_STRING).join("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0");
+
+// Reverse word order so it feeds logically into the document
+const REVERSED_POLISHED = POLISHED_STRING.replace(/\./g, "").split(" ").reverse().join(" ");
+const LONG_POLISHED = Array(15).fill(REVERSED_POLISHED).join("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0");
 
 const PILL_BARS = 9;
 const waveforms = [

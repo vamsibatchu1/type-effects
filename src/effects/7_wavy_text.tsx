@@ -44,9 +44,14 @@ const AudioPill = () => {
     );
 };
 
-const TypewriterText = ({ text }: { text: string }) => {
+const TypewriterText = ({ text, onType }: { text: string, onType?: (idx: number) => void }) => {
   const [displayText, setDisplayText] = React.useState("");
   const [index, setIndex] = React.useState(0);
+
+  // Notify parent of typing changes for physics syncing
+  React.useEffect(() => {
+    if (onType) onType(index);
+  }, [index, onType]);
 
   React.useEffect(() => {
     if (index < text.length) {
@@ -69,6 +74,54 @@ const TypewriterText = ({ text }: { text: string }) => {
       {displayText}
       <span className="inline-block w-[6px] h-[0.9em] bg-[#1a1a1a] ml-[2px] align-baseline animate-cursor" />
     </>
+  );
+};
+
+const PaperFeeder = () => {
+  const [typeIndex, setTypeIndex] = React.useState(0);
+  const text = POLISHED_STRING;
+
+  // Real-time Printer Chug Logic
+  // IBM Plex Mono fits ~27 chars per line in this relative container
+  const charsPerLine = 27;
+  const lineCount = Math.floor(typeIndex / charsPerLine);
+  
+  // Shift UP by typical line-height (~21px) exactly every time it wraps a line
+  const yShift = -(lineCount * 21);
+
+  // Micro-vibrations: tiny XY jolts while typing
+  const isTyping = typeIndex > 0 && typeIndex < text.length;
+  const jitterX = isTyping ? (typeIndex % 2 === 0 ? 1 : -1) : 0;
+  const jitterY = isTyping ? (typeIndex % 3 === 0 ? 1 : 0) : 0;
+
+  return (
+    <div className="absolute top-1/2 -translate-y-1/2 left-[360px] w-[260px] h-[320px] mt-[10px] rotate-[14deg] z-10 origin-left pointer-events-none">
+      
+      {/* Static Feeder Slot Bracket */}
+      <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] -mt-[24px] w-[14px] h-[70px] bg-[#1A1A1A] rounded-r-md z-20" />
+
+      {/* Animated Paper */}
+      <motion.div 
+        animate={{ 
+          y: yShift + jitterY,
+          x: jitterX
+        }}
+        transition={{ 
+          y: { type: "spring", stiffness: 400, damping: 25 },
+          x: { type: "tween", duration: 0.05 }
+        }}
+        className="w-full h-full bg-[#FDFCFB] shadow-[8px_16px_0px_rgba(147,130,255,0.2)] border-[2px] border-[#1A1A1A] p-6 flex flex-col overflow-hidden"
+      >
+        <div className="border-b-[2px] border-black/10 pb-3 mb-5 flex items-center justify-between relative z-10">
+          <div className="text-[10px] font-ibm-mono font-bold tracking-widest text-[#9382FF] uppercase">Output_7.txt</div>
+          <div className="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse" />
+        </div>
+
+        <div className="font-ibm-mono text-[13px] leading-[1.6] text-[#1a1a1a] relative z-10 text-justify">
+          <TypewriterText text={text} onType={setTypeIndex} />
+        </div>
+      </motion.div>
+    </div>
   );
 };
 
@@ -138,7 +191,7 @@ export default function WavyTextEffect() {
         </div>
 
         {/* RIGHT STREAM: POLISHED TEXT IN SOLID WAVE PIPELINE */}
-        <div className="absolute right-0 w-[70%] h-full overflow-hidden">
+        <div className="absolute right-0 w-[70%] h-full">
           
           {/* Wave Pipeline */}
           <svg width="2000" height="400" viewBox="0 0 2000 400" className="absolute left-0 top-1/2 -translate-y-1/2 z-0 pointer-events-none">
@@ -161,22 +214,7 @@ export default function WavyTextEffect() {
              </text>
           </svg>
 
-          {/* Document Paper */}
-          <div className="absolute top-1/2 -translate-y-1/2 left-[360px] w-[260px] min-h-[300px] mt-[10px] bg-[#FDFCFB] shadow-[8px_16px_0px_rgba(147,130,255,0.2)] border-[2px] border-[#1A1A1A] z-10 p-6 flex flex-col rotate-[14deg] overflow-hidden">
-            
-            {/* Feeder Slot Bracket */}
-            <div className="absolute top-1/2 -translate-y-1/2 -left-[4px] w-[14px] h-[70px] bg-[#1A1A1A] rounded-r-md z-20" />
-
-            <div className="border-b-[2px] border-black/10 pb-3 mb-5 flex items-center justify-between relative z-10">
-              <div className="text-[10px] font-ibm-mono font-bold tracking-widest text-[#9382FF] uppercase">Output_7.txt</div>
-              <div className="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse" />
-            </div>
-
-            <div className="font-ibm-mono text-[13px] leading-[1.6] text-[#1a1a1a] relative z-10 text-justify">
-              <TypewriterText text={POLISHED_STRING} />
-            </div>
-            
-          </div>
+          <PaperFeeder />
         </div>
 
       </div>

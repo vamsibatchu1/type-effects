@@ -65,7 +65,7 @@ const TypewriterText = ({ text, onType, isLive }: { text: string, onType?: (idx:
       const timeout = setTimeout(() => {
         setDisplayText(text.slice(0, index + 1));
         setIndex(index + 1);
-      }, Math.random() * 30 + 30);
+      }, 45);
       return () => clearTimeout(timeout);
     } else if (!isLive) {
       const timeout = setTimeout(() => {

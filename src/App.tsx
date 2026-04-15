@@ -6,6 +6,7 @@ import KineticFocusEffect from "./effects/3_kinetic_focus";
 import DynamicLayoutEffect from "./effects/4_dynamic_layout";
 import PretextFlowEffect from "./effects/5_pretext_flow";
 import ScriptureLayoutEffect from "./effects/6_scripture_layout";
+import WavyTextEffect from "./effects/7_wavy_text";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -37,6 +38,11 @@ const EFFECTS: EffectEntry[] = [
     id: "scripture",
     label: "Scripture Lens",
     description: "A historical grid layout rendered flawlessly on Canvas, featuring structural red alignment guides and typography that dynamically distorts and parts around your cursor."
+  },
+  {
+    id: "wavy",
+    label: "Wavy Text Effect",
+    description: "A continuous flow of messy text undulating into an audio pill, emerging as a cleanly polished transcription stream."
   }
 ];
 
@@ -76,13 +82,14 @@ export default function App() {
     <div className="flex min-h-screen bg-[#fdfcfb] selection:bg-orange-100 overflow-hidden">
       {/* Sidebar - 20% */}
       <aside className="w-[20%] border-r border-gray-200 p-8 flex flex-col h-screen sticky top-0 bg-[#fdfcfb] z-20 font-ibm-mono">
-        <div className="mb-12">
+        {/* Sidebar Header */}
+        <div className="flex-shrink-0 mb-10">
           <div className="text-xl font-medium mb-6 tracking-tighter text-gray-900 pb-2 flex items-center">
             type.effects
             <span className="inline-block w-[8px] h-[0.9em] bg-black ml-1.5 animate-cursor" />
           </div>
           
-          <div className="mb-10">
+          <div className="mb-6">
             <input 
               type="text"
               placeholder="Search effects..."
@@ -91,7 +98,10 @@ export default function App() {
               className="w-full bg-white border border-black rounded-none px-3 py-3 text-[11px] focus:outline-none transition-all placeholder:text-gray-400"
             />
           </div>
+        </div>
 
+        {/* Scrollable Navigation Area */}
+        <div className="flex-grow overflow-y-auto no-scrollbar py-4">
           <nav className="space-y-4">
             {filteredEffects.map((effect) => (
               <button
@@ -118,8 +128,8 @@ export default function App() {
           </nav>
         </div>
 
-        {/* Global Sidebar Footer */}
-        <div className="mt-auto pt-8 border-t border-black/10 text-[11px] leading-relaxed text-gray-500 uppercase tracking-wider font-semibold">
+        {/* Sidebar Footer */}
+        <div className="flex-shrink-0 mt-auto pt-8 border-t border-black/10 text-[11px] leading-relaxed text-gray-500 uppercase tracking-wider font-semibold">
           a project by{" "}
           <a 
             href="https://www.linkedin.com/in/vamsikbatchu/" 
@@ -156,6 +166,7 @@ export default function App() {
         {activeEffect === "dynamic-layout" && <DynamicLayoutEffect />}
         {activeEffect === "pretext" && <PretextFlowEffect />}
         {activeEffect === "scripture" && <ScriptureLayoutEffect />}
+        {activeEffect === "wavy" && <WavyTextEffect />}
       </main>
     </div>
   );

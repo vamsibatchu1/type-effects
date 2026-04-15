@@ -48,6 +48,7 @@ export default function ScriptureLayoutEffect() {
     let isFontLoaded = false;
     let prepared: any = null;
     let isImageLoaded = false;
+    let isMagnifier = false; // Toggle state: Repeller vs Magnifier
     let animationFrameId: number;
 
     // Robust image loading using Vite's URL constructor
@@ -64,8 +65,9 @@ export default function ScriptureLayoutEffect() {
       try {
         const fontPromise1 = document.fonts.load(`24px "OldLondon"`);
         const fontPromise2 = document.fonts.load(`24px "Newsreader"`);
+        const fontPromise3 = document.fonts.load(`10px "IBM Plex Mono"`);
         const timeoutPromise = new Promise(res => setTimeout(res, 1500));
-        await Promise.race([Promise.all([fontPromise1, fontPromise2]), timeoutPromise]);
+        await Promise.race([Promise.all([fontPromise1, fontPromise2, fontPromise3]), timeoutPromise]);
       } catch (e) {
         console.error("Font load error", e);
       } finally {
@@ -79,17 +81,21 @@ export default function ScriptureLayoutEffect() {
     const getWarpedPoint = (x: number, y: number) => {
         let cx = x;
         let cy = y;
-        const dx = cx - mouseX;
-        const dy = cy - mouseY;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const MOUSE_RADIUS_RULERS = MOUSE_RADIUS * 1.5;
 
-        if (dist < MOUSE_RADIUS_RULERS) {
-            const force = Math.max(0, 1 - dist / MOUSE_RADIUS_RULERS);
-            const push = force * force * (MOUSE_RADIUS_RULERS * 0.5); 
-            const angle = Math.atan2(dy, dx);
-            cx += Math.cos(angle) * push;
-            cy += Math.sin(angle) * push;
+        // Only warp/repel when NOT in magnifier mode
+        if (!isMagnifier) {
+            const dx = cx - mouseX;
+            const dy = cy - mouseY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const MOUSE_RADIUS_RULERS = MOUSE_RADIUS * 1.5;
+
+            if (dist < MOUSE_RADIUS_RULERS) {
+                const force = Math.max(0, 1 - dist / MOUSE_RADIUS_RULERS);
+                const push = force * force * (MOUSE_RADIUS_RULERS * 0.5); 
+                const angle = Math.atan2(dy, dx);
+                cx += Math.cos(angle) * push;
+                cy += Math.sin(angle) * push;
+            }
         }
         return { x: cx, y: cy };
     };
@@ -163,11 +169,13 @@ export default function ScriptureLayoutEffect() {
               blockedAreas.push({ left: dropCapRect.x, right: dropCapRect.x + dropCapRect.w });
           }
 
-          // 2. Check Mouse block
-          const dy = Math.abs(lineCenterY - mouseY);
-          if (dy < MOUSE_RADIUS) {
-            const dx = Math.sqrt(MOUSE_RADIUS * MOUSE_RADIUS - dy * dy);
-            blockedAreas.push({ left: mouseX - dx - 20, right: mouseX + dx + 20 });
+          // 2. Check Mouse block - ONLY if NOT in magnifier mode
+          if (!isMagnifier) {
+              const dy = Math.abs(lineCenterY - mouseY);
+              if (dy < MOUSE_RADIUS) {
+                const dx = Math.sqrt(MOUSE_RADIUS * MOUSE_RADIUS - dy * dy);
+                blockedAreas.push({ left: mouseX - dx - 20, right: mouseX + dx + 20 });
+              }
           }
 
           // Merge and compute gaps
@@ -214,34 +222,7 @@ export default function ScriptureLayoutEffect() {
         return linesData;
     };
 
-    const render = () => {
-      // Smoothly interpolate mouse for butter-smooth repelling
-      const dx = targetMouseX - mouseX;
-      const dy = targetMouseY - mouseY;
-      mouseX += dx * 0.15;
-      mouseY += dy * 0.15;
-
-      // 1. Background Parchment
-      ctx.fillStyle = "#EAE3CD"; 
-      ctx.fillRect(0, 0, width, height);
-      
-      // Add subtle noise/texture
-      const grad = ctx.createLinearGradient(0, 0, width, height);
-      grad.addColorStop(0, "rgba(255, 235, 180, 0.05)");
-      grad.addColorStop(1, "rgba(0,0,0, 0.1)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, width, height);
-
-      // Don't render text until prepared
-      if (!isFontLoaded || !prepared) {
-          ctx.fillStyle = "#1e1b15";
-          ctx.font = `italic 20px ${fontFamily}`;
-          ctx.textAlign = "center";
-          ctx.fillText("Loading Scripture Layout...", width/2, height/2);
-          animationFrameId = requestAnimationFrame(render);
-          return;
-      }
-
+    const drawEverything = (isZoomPass = false) => {
       const marginX = width * 0.15;
       const contentWidth = width - (marginX * 2);
       const colGap = 40;
@@ -250,21 +231,17 @@ export default function ScriptureLayoutEffect() {
       const startX2 = startX1 + colWidth + colGap;
 
       const headerTopY = 60;
-      
-      // Calculate dynamic height based on aspect ratio to avoid squishing
       let imagePlaceholderHeight = 250; 
       if (isImageLoaded || scriptureImg.complete) {
           const ratio = scriptureImg.naturalHeight / scriptureImg.naturalWidth;
           imagePlaceholderHeight = contentWidth * ratio;
       }
 
-      // 2. Red Rulers (Edge to Edge)
       ctx.strokeStyle = "rgba(180, 60, 40, 0.4)";
       ctx.lineWidth = 1;
 
       const hLines: number[] = [];
       const vLines: number[] = [];
-
       const addHLine = (y: number) => { hLines.push(y); drawBendingLine(0, y, width, y); };
       const addVLine = (x: number) => { vLines.push(x); drawBendingLine(x, 0, x, height); };
 
@@ -277,7 +254,6 @@ export default function ScriptureLayoutEffect() {
       addHLine(headerTopY);
       addHLine(headerTopY + imagePlaceholderHeight);
 
-      // Image Rendering
       if (isImageLoaded || scriptureImg.complete) {
           ctx.drawImage(scriptureImg, startX1, headerTopY, contentWidth, imagePlaceholderHeight);
       } else {
@@ -285,94 +261,69 @@ export default function ScriptureLayoutEffect() {
           ctx.fillRect(startX1, headerTopY, contentWidth, imagePlaceholderHeight);
       }
 
-      // 3. Draw Header
       const contentStartY = drawHeader(headerTopY + imagePlaceholderHeight + 20, addHLine);
 
-      // 4. Pretext Engine
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillStyle = "#1e1b15";
       ctx.font = fontStr;
 
-      // Layout columns ignoring the repeller dynamically
       const linesCol1 = computeColumnLayout(startX1, colWidth, contentStartY, MOUSE_RADIUS, 0);
       const linesCol2 = computeColumnLayout(startX2, colWidth, contentStartY, MOUSE_RADIUS, 1);
 
-      // Dynamically grow canvas height based on content
-      const maxTextY = Math.max(
-          linesCol1.length > 0 ? linesCol1[linesCol1.length - 1].y + lineHeight : 0,
-          linesCol2.length > 0 ? linesCol2[linesCol2.length - 1].y + lineHeight : 0
-      );
-      
-      const targetCanvasHeight = Math.max(container.clientHeight, maxTextY + 100);
-      if (Math.abs(height - targetCanvasHeight) > 50) {
-          height = targetCanvasHeight;
-          canvas.height = height * dpr;
-          ctx.scale(dpr, dpr);
-          canvas.style.height = `${height}px`;
+      // Height sync: only on main pass
+      if (!isZoomPass) {
+          const maxTextY = Math.max(
+              linesCol1.length > 0 ? linesCol1[linesCol1.length - 1].y + lineHeight : 0,
+              linesCol2.length > 0 ? linesCol2[linesCol2.length - 1].y + lineHeight : 0
+          );
+          const targetCanvasHeight = Math.max(container.clientHeight, maxTextY + 100);
+          if (Math.abs(height - targetCanvasHeight) > 50) {
+              height = targetCanvasHeight;
+              canvas.height = height * dpr;
+              ctx.scale(dpr, dpr);
+              canvas.style.height = `${height}px`;
+          }
       }
 
-      // Render Drop Cap block correctly 
-      // We manually draw the Drop Cap pushing out of the first lines of col 1
       const dropCapX = startX1;
       const dropCapY = contentStartY;
-      
-      // Draw intricate border for drop cap
       ctx.strokeStyle = "#1e1b15";
       ctx.lineWidth = 1.5;
       
-      // If mouse is near drop cap, let's offset it slightly (Parallax)
       let dCx = dropCapX;
       let dCy = dropCapY;
-      const dxDC = (dCx + 65) - mouseX;
-      const dyDC = (dCy + 65) - mouseY;
-      const distDC = Math.sqrt(dxDC*dxDC + dyDC*dyDC);
-      if (distDC < MOUSE_RADIUS) {
-          const push = (MOUSE_RADIUS - distDC) * 0.2;
-          const a = Math.atan2(dyDC, dxDC);
-          dCx += Math.cos(a) * push;
-          dCy += Math.sin(a) * push;
+      
+      if (!isMagnifier) {
+          const dxDC = (dCx + 65) - mouseX;
+          const dyDC = (dCy + 65) - mouseY;
+          const distDC = Math.sqrt(dxDC*dxDC + dyDC*dyDC);
+          if (distDC < MOUSE_RADIUS) {
+              const push = (MOUSE_RADIUS - distDC) * 0.2;
+              const a = Math.atan2(dyDC, dxDC);
+              dCx += Math.cos(a) * push;
+              dCy += Math.sin(a) * push;
+          }
       }
 
       ctx.strokeRect(dCx, dCy, 130, 130);
       ctx.fillStyle = "rgba(0,0,0,0.02)";
       ctx.fillRect(dCx, dCy, 130, 130);
       
-      // Render letter "T"
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.font = `normal 120px "Newsreader", serif`;
       ctx.fillStyle = "#1e1b15";
       ctx.fillText("T", dCx + 65, dCy + 65);
 
-      // Render Columns
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
       ctx.font = fontStr;
       
-      for (const line of linesCol1) {
-          ctx.fillText(line.text, line.x, line.y);
-      }
-      for (const line of linesCol2) {
-          ctx.fillText(line.text, line.x, line.y);
-      }
+      for (const line of linesCol1) ctx.fillText(line.text, line.x, line.y);
+      for (const line of linesCol2) ctx.fillText(line.text, line.x, line.y);
 
-      // 5. Draw the Invisible Mouse Lens Ring
-      if (mouseX > -500) {
-          ctx.beginPath();
-          ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(180, 60, 40, 0.15)";
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          // A small inner distortion ring
-          ctx.beginPath();
-          ctx.arc(mouseX, mouseY, MOUSE_RADIUS * 0.9, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(180, 60, 40, 0.05)";
-          ctx.stroke();
-      }
-
-      // 6. Draw Distance/Measurement Numbers Between Rulers
+      // Metrics
       ctx.fillStyle = "rgba(180, 60, 40, 0.6)";
       ctx.font = "10px monospace";
       ctx.textAlign = "center";
@@ -381,35 +332,160 @@ export default function ScriptureLayoutEffect() {
       hLines.sort((a, b) => a - b);
       vLines.sort((a, b) => a - b);
 
-      // Horizontal Distance Metrics (Printed in Left/Right margins)
       for (let i = 0; i < hLines.length - 1; i++) {
-          const y1 = hLines[i];
-          const y2 = hLines[i+1];
-          const midY = (y1 + y2) / 2;
-          const dist = Math.abs(y2 - y1);
+          const y1 = hLines[i], y2 = hLines[i+1], dist = Math.abs(y2 - y1);
           if (dist > 15) { 
-             const ptLeft = getWarpedPoint(startX1 - 40, midY);
-             ctx.fillText(`${Math.round(dist)}`, ptLeft.x, ptLeft.y);
-             
-             const ptRight = getWarpedPoint(startX2 + colWidth + 40, midY);
-             ctx.fillText(`${Math.round(dist)}`, ptRight.x, ptRight.y);
+             const ptL = getWarpedPoint(startX1 - 40, (y1+y2)/2);
+             ctx.fillText(`${Math.round(dist)}`, ptL.x, ptL.y);
+             const ptR = getWarpedPoint(startX2 + colWidth + 40, (y1+y2)/2);
+             ctx.fillText(`${Math.round(dist)}`, ptR.x, ptR.y);
           }
+      }
+      for (let i = 0; i < vLines.length - 1; i++) {
+          const x1 = vLines[i], x2 = vLines[i+1], dist = Math.abs(x2 - x1);
+          if (dist > 25) {
+             const ptT = getWarpedPoint((x1+x2)/2, headerTopY - 20);
+             ctx.fillText(`${Math.round(dist)}`, ptT.x, ptT.y);
+             const ptB = getWarpedPoint((x1+x2)/2, height - 20);
+             ctx.fillText(`${Math.round(dist)}`, ptB.x, ptB.y);
+          }
+      }
+    };
+
+    const render = () => {
+      const dx = targetMouseX - mouseX;
+      const dy = targetMouseY - mouseY;
+      mouseX += dx * 0.15;
+      mouseY += dy * 0.15;
+
+      ctx.fillStyle = "#EAE3CD"; 
+      ctx.fillRect(0, 0, width, height);
+      const grad = ctx.createLinearGradient(0, 0, width, height);
+      grad.addColorStop(0, "rgba(255, 235, 180, 0.05)");
+      grad.addColorStop(1, "rgba(0,0,0, 0.1)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+
+      if (!isFontLoaded || !prepared) {
+          ctx.fillStyle = "#1e1b15";
+          ctx.font = `italic 20px "Newsreader", serif`;
+          ctx.textAlign = "center";
+          ctx.fillText("Loading Scripture Layout...", width/2, height/2);
+          animationFrameId = requestAnimationFrame(render);
+          return;
       }
 
-      // Vertical Distance Metrics (Printed on Top/Bottom of Screen)
-      for (let i = 0; i < vLines.length - 1; i++) {
-          const x1 = vLines[i];
-          const x2 = vLines[i+1];
-          const midX = (x1 + x2) / 2;
-          const dist = Math.abs(x2 - x1);
-          if (dist > 25) {
-             const ptTop = getWarpedPoint(midX, headerTopY - 20);
-             ctx.fillText(`${Math.round(dist)}`, ptTop.x, ptTop.y);
-             
-             const ptBottom = getWarpedPoint(midX, height - 20);
-             ctx.fillText(`${Math.round(dist)}`, ptBottom.x, ptBottom.y);
+      // 1. BASE PASS
+      drawEverything(false);
+
+      // 2. MAGNIFIER PASS
+      if (isMagnifier && mouseX > -500) {
+          ctx.save();
+          // Circular clip
+          ctx.beginPath();
+          ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
+          ctx.clip();
+
+          // Magnified draw
+          const zoom = 1.6;
+          ctx.translate(mouseX, mouseY);
+          ctx.scale(zoom, zoom);
+          ctx.translate(-mouseX, -mouseY);
+          
+          // Clear background inside clip to avoid ghosting
+          ctx.fillStyle = "#EAE3CD";
+          ctx.fillRect(mouseX - MOUSE_RADIUS, mouseY - MOUSE_RADIUS, MOUSE_RADIUS*2, MOUSE_RADIUS*2);
+          
+          drawEverything(true);
+          ctx.restore();
+
+              // Red Bezel (Updated from grey)
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
+              const bezel = ctx.createRadialGradient(mouseX, mouseY, MOUSE_RADIUS * 0.85, mouseX, mouseY, MOUSE_RADIUS);
+              bezel.addColorStop(0, "rgba(180, 60, 40, 0)");
+              bezel.addColorStop(0.7, "rgba(180, 60, 40, 0.1)");
+              bezel.addColorStop(1, "rgba(180, 60, 40, 0.4)");
+              ctx.strokeStyle = bezel;
+              ctx.lineWidth = 8;
+              ctx.stroke();
+
+              // Solid Red Inner Border
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
+              ctx.strokeStyle = "rgba(180, 60, 40, 0.6)";
+              ctx.lineWidth = 2;
+              ctx.stroke();
+
+              // Concave Optical Effect (Inner Shadow)
+              const concave = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, MOUSE_RADIUS);
+              concave.addColorStop(0, "rgba(0,0,0,0.08)"); // Darker center
+              concave.addColorStop(0.5, "rgba(0,0,0,0.03)");
+              concave.addColorStop(1, "rgba(0,0,0,0)"); // Fades to edge
+              ctx.fillStyle = concave;
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
+              ctx.fill();
+
+              // Glass shine
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS * 0.96, -Math.PI/4, -Math.PI/2, true);
+              ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+              ctx.lineWidth = 3;
+              ctx.stroke();
+          } else {
+              // REPELLER MODE: Advanced "Surveyor" Lens Details
+              const ringRotation = Date.now() * 0.001;
+              
+              // 1. Primary Force Ring (Thicker)
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS, 0, Math.PI * 2);
+              ctx.strokeStyle = "rgba(180, 60, 40, 0.4)";
+              // @ts-ignore
+              if (ctx.setLineDash) ctx.setLineDash([8, 12]);
+              ctx.lineWidth = 2;
+              ctx.stroke();
+              // @ts-ignore
+              if (ctx.setLineDash) ctx.setLineDash([]); 
+
+              // 2. Rotating Degree Ring (Thicker)
+              ctx.save();
+              ctx.translate(mouseX, mouseY);
+              ctx.rotate(ringRotation);
+              ctx.strokeStyle = "rgba(180, 60, 40, 0.35)";
+              ctx.lineWidth = 2;
+              for (let i = 0; i < 8; i++) {
+                  ctx.rotate(Math.PI / 4);
+                  ctx.beginPath();
+                  ctx.moveTo(MOUSE_RADIUS - 12, 0); 
+                  ctx.lineTo(MOUSE_RADIUS + 8, 0);
+                  ctx.stroke();
+              }
+              ctx.restore();
+
+              // 3. Central Crosshair (Thicker)
+              ctx.beginPath();
+              ctx.moveTo(mouseX - 15, mouseY); ctx.lineTo(mouseX + 15, mouseY);
+              ctx.moveTo(mouseX, mouseY - 15); ctx.lineTo(mouseX, mouseY + 15);
+              ctx.strokeStyle = "rgba(180, 60, 40, 0.6)"; 
+              ctx.lineWidth = 2;
+              ctx.stroke();
+
+              // 4. Live Coordinate Readout (INTERNAL & IBM PLEX MONO)
+              ctx.fillStyle = "rgba(180, 60, 40, 0.9)";
+              ctx.font = "bold 9px 'IBM Plex Mono', monospace";
+              ctx.textAlign = "left";
+              ctx.textBaseline = "top";
+              ctx.fillText(`X:${Math.round(mouseX)}`, mouseX + 8, mouseY + 8);
+              ctx.fillText(`Y:${Math.round(mouseY)}`, mouseX + 8, mouseY + 20);
+              
+              // 5. Outer Faint Halo
+              ctx.beginPath();
+              ctx.arc(mouseX, mouseY, MOUSE_RADIUS * 1.5, 0, Math.PI * 2);
+              ctx.strokeStyle = "rgba(180, 60, 40, 0.08)"; 
+              ctx.lineWidth = 1;
+              ctx.stroke();
           }
-      }
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -450,14 +526,23 @@ export default function ScriptureLayoutEffect() {
       canvas.style.height = `${height}px`;
     };
 
+    const handleClick = () => {
+        isMagnifier = !isMagnifier;
+        if (container) {
+            container.style.cursor = isMagnifier ? 'zoom-in' : 'crosshair';
+        }
+    };
+
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('click', handleClick);
     window.addEventListener('resize', handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('click', handleClick);
       window.removeEventListener('resize', handleResize);
     };
   }, []);

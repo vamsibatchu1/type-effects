@@ -47,30 +47,34 @@ const AudioPill = () => {
     );
 };
 
-const TypewriterText = ({ text, onType }: { text: string, onType?: (idx: number) => void }) => {
+const TypewriterText = ({ text, onType, isLive }: { text: string, onType?: (idx: number) => void, isLive: boolean }) => {
   const [displayText, setDisplayText] = React.useState("");
   const [index, setIndex] = React.useState(0);
 
-  // Notify parent of typing changes for physics syncing
   React.useEffect(() => {
     if (onType) onType(index);
   }, [index, onType]);
 
   React.useEffect(() => {
+    if (text.length < index || (isLive && text === "")) {
+       setDisplayText("");
+       setIndex(0);
+       return;
+    }
     if (index < text.length) {
       const timeout = setTimeout(() => {
         setDisplayText(text.slice(0, index + 1));
         setIndex(index + 1);
       }, Math.random() * 30 + 30);
       return () => clearTimeout(timeout);
-    } else {
+    } else if (!isLive) {
       const timeout = setTimeout(() => {
         setDisplayText("");
         setIndex(0);
       }, 4000);
       return () => clearTimeout(timeout);
     }
-  }, [index, text]);
+  }, [index, text, isLive]);
 
   return (
     <>
@@ -80,19 +84,13 @@ const TypewriterText = ({ text, onType }: { text: string, onType?: (idx: number)
   );
 };
 
-const PaperFeeder = () => {
+const PaperFeeder = ({ text, isLive }: { text: string, isLive: boolean }) => {
   const [typeIndex, setTypeIndex] = React.useState(0);
-  const text = POLISHED_STRING;
 
-  // Real-time Printer Chug Logic
-  // IBM Plex Mono fits ~27 chars per line in this relative container
   const charsPerLine = 27;
   const lineCount = Math.floor(typeIndex / charsPerLine);
-  
-  // Shift UP by typical line-height (~21px) exactly every time it wraps a line
   const yShift = -(lineCount * 21);
 
-  // Micro-vibrations: tiny XY jolts while typing
   const isTyping = typeIndex > 0 && typeIndex < text.length;
   const jitterX = isTyping ? (typeIndex % 2 === 0 ? 1 : -1) : 0;
   const jitterY = isTyping ? (typeIndex % 3 === 0 ? 1 : 0) : 0;
@@ -105,23 +103,17 @@ const PaperFeeder = () => {
 
       {/* Animated Paper */}
       <motion.div 
-        animate={{ 
-          y: yShift + jitterY,
-          x: jitterX
-        }}
-        transition={{ 
-          y: { type: "spring", stiffness: 400, damping: 25 },
-          x: { type: "tween", duration: 0.05 }
-        }}
+        animate={{ y: yShift + jitterY, x: jitterX }}
+        transition={{ y: { type: "spring", stiffness: 400, damping: 25 }, x: { type: "tween", duration: 0.05 } }}
         className="w-full h-full bg-[#FDFCFB] shadow-[8px_16px_0px_rgba(147,130,255,0.2)] border-[2px] border-[#1A1A1A] p-6 flex flex-col overflow-hidden"
       >
         <div className="border-b-[2px] border-black/10 pb-3 mb-5 flex items-center justify-between relative z-10">
           <div className="text-[10px] font-ibm-mono font-bold tracking-widest text-[#9382FF] uppercase">Output_7.txt</div>
-          <div className="w-2 h-2 rounded-full bg-[#1A1A1A] animate-pulse" />
+          <div className={`w-2 h-2 rounded-full animate-pulse ${isLive ? 'bg-red-500' : 'bg-[#1A1A1A]'}`} />
         </div>
 
         <div className="font-ibm-mono text-[13px] leading-[1.6] text-[#1a1a1a] relative z-10 text-justify">
-          <TypewriterText text={text} onType={setTypeIndex} />
+          <TypewriterText text={text} onType={setTypeIndex} isLive={isLive} />
         </div>
       </motion.div>
     </div>
@@ -129,6 +121,48 @@ const PaperFeeder = () => {
 };
 
 export default function WavyTextEffect() {
+  const [isLive, setIsLive] = React.useState(false);
+  const [liveText, setLiveText] = React.useState("");
+  const recognitionRef = React.useRef<any>(null);
+
+  const toggleRecording = () => {
+    if (isLive) {
+      setIsLive(false);
+      recognitionRef.current?.stop();
+    } else {
+      setIsLive(true);
+      setLiveText("");
+      
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = (event: any) => {
+          let transcript = '';
+          for (let i = 0; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          setLiveText(transcript);
+        };
+        
+        recognition.start();
+        recognitionRef.current = recognition;
+      } else {
+        alert("Live Transcription requires Chrome Desktop.");
+        setIsLive(false);
+      }
+    }
+  };
+
+  const activeText = isLive 
+    ? (liveText || "Listening... Start speaking into your microphone.")
+    : POLISHED_STRING;
+
+  const ribbonTextPattern = activeText.replace(/\./g, "").split(" ").reverse().join(" ");
+  const ribbonStream = Array(15).fill(ribbonTextPattern).join("\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0");
+
   return (
     <div className="w-full h-full flex flex-col items-center justify-center font-sans overflow-hidden relative selection:bg-purple-200 selection:text-purple-900 bg-[#F0F0FF]">
       {/* Hand-drawn Grid Background */}
@@ -188,9 +222,15 @@ export default function WavyTextEffect() {
           </svg>
         </div>
 
-        {/* THE PILL */}
-        <div className="absolute top-1/2 left-[30%] -translate-x-1/2 -translate-y-1/2 z-50">
+        {/* THE PILL AND BUTTON */}
+        <div className="absolute top-1/2 left-[30%] -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col items-center mt-[16px]">
           <AudioPill />
+          <button 
+            onClick={toggleRecording}
+            className={`mt-4 px-4 py-2 border-[2px] border-[#1A1A1A] text-[10px] font-bold tracking-[0.1em] uppercase shadow-[4px_4px_0_0_#1A1A1A] active:translate-y-[2px] active:translate-x-[2px] active:shadow-[2px_2px_0_0_#1A1A1A] transition-all whitespace-nowrap cursor-pointer ${isLive ? 'bg-red-400 text-white border-red-500 shadow-[4px_4px_0_0_#B91C1C]' : 'bg-[#FFF9C4] text-black hover:bg-[#FF8C00]'}`}
+          >
+            {isLive ? "Stop Speaking" : "Start Speaking"}
+          </button>
         </div>
 
         {/* RIGHT STREAM: POLISHED TEXT IN SOLID WAVE PIPELINE */}
@@ -212,12 +252,12 @@ export default function WavyTextEffect() {
                      animate={{ startOffset: [-8000, 0] }}
                      transition={{ repeat: Infinity, duration: 140, ease: "linear" }}
                  >
-                     {LONG_POLISHED}
+                     {ribbonStream}
                  </motion.textPath>
              </text>
           </svg>
 
-          <PaperFeeder />
+          <PaperFeeder text={activeText} isLive={isLive} />
         </div>
 
       </div>

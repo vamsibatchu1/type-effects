@@ -140,8 +140,14 @@ export default function ThreadedBlobsEffect() {
     return () => clearInterval(interval);
   }, [targetText]);
 
+  const isHanging = useMotionValue(0);
+
+  useEffect(() => {
+    isHanging.set((!isDragging && !activeProp) ? 1 : 0);
+  }, [isDragging, activeProp, isHanging]);
+
   // Wavy / Whip String Physics Path
-  const threadPath = useTransform([tipX, tipY, lagX, lagY], ([endX, endY, lx, ly]) => {
+  const threadPath = useTransform([tipX, tipY, lagX, lagY, isHanging], ([endX, endY, lx, ly, hanging]) => {
     const startX = MAIN_NODE.hole.x;
     const startY = MAIN_NODE.hole.y;
     
@@ -150,7 +156,10 @@ export default function ThreadedBlobsEffect() {
     const dy = endY - startY;
     const dist = Math.sqrt(dx * dx + dy * dy);
     const tension = Math.min(1, dist / 800);
-    const gravitySag = Math.max(60, 300 * (1 - tension));
+    
+    // Apply a sag factor to remove the U-shape when hanging freely
+    const sagFactor = 1 - (hanging as number);
+    const gravitySag = Math.max(60, 300 * (1 - tension)) * sagFactor;
     
     // Calculate momentum from the lagging point
     const momentumX = endX - lx;

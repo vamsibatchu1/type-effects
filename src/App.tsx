@@ -7,6 +7,8 @@ import DynamicLayoutEffect from "./effects/4_dynamic_layout";
 import PretextFlowEffect from "./effects/5_pretext_flow";
 import ScriptureLayoutEffect from "./effects/6_scripture_layout";
 import WavyTextEffect from "./effects/7_wavy_text";
+import GridTypographyEffect from "./effects/8_grid_typography";
+import ThreadedBlobsEffect from "./effects/9_threaded_blobs";
 
 const EFFECTS: EffectEntry[] = [
   { 
@@ -43,6 +45,16 @@ const EFFECTS: EffectEntry[] = [
     id: "wavy",
     label: "Wavy Text Effect",
     description: "A continuous flow of messy text undulating into an audio pill, emerging as a cleanly polished transcription stream."
+  },
+  {
+    id: "grid-typography",
+    label: "Grid Typography",
+    description: "A typographic experiment where a word is visualized using primitive shapes in a rigid grid, inspired by modular typography."
+  },
+  {
+    id: "threaded-blobs",
+    label: "Threaded Blobs",
+    description: "An interactive visualization of organic blobs connected by physical blue threads to alter context and mood."
   }
 ];
 
@@ -167,6 +179,8 @@ export default function App() {
         {activeEffect === "pretext" && <PretextFlowEffect />}
         {activeEffect === "scripture" && <ScriptureLayoutEffect />}
         {activeEffect === "wavy" && <WavyTextEffect />}
+        {activeEffect === "grid-typography" && <GridTypographyEffect />}
+        {activeEffect === "threaded-blobs" && <ThreadedBlobsEffect />}
       </main>
     </div>
   );

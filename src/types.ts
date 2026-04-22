@@ -1,4 +1,4 @@
-export type EffectType = "push" | "split" | "kinetic" | "dynamic-layout" | "pretext" | "scripture" | "wavy";
+export type EffectType = "push" | "split" | "kinetic" | "dynamic-layout" | "pretext" | "scripture" | "wavy" | "grid-typography" | "threaded-blobs";
 
 export interface InteractiveWordProps {
   word: string;
